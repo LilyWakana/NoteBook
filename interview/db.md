@@ -61,5 +61,5 @@
 
 
 ### 其他
-- https://juejin.im/post/5cb6c4ef51882532b70e6ff0
+- mysql面试 https://juejin.im/post/5cb6c4ef51882532b70e6ff0
 - 隔离等级 https://www.jianshu.com/p/8d735db9c2c0
