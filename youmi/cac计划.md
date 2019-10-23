@@ -41,3 +41,7 @@ order by sum(revenue) desc
 ## 应用
 - 权重数据由baton定时从效果数据如db20.stat汇总后，写入stat_sort表：aid-oid-weight
 - 广告外放时，adfetchy会调用adsort_api，来根据stat_sort里面的数据对广告进行排序
+
+## 其他规则
+- 广告上下线、拉黑规则、备胎规则、别名：https://conf.umlife.net/pages/viewpage.action?pageId=58991144
+- api广告下放排序规则/cac规则：https://conf.umlife.net/pages/viewpage.action?pageId=64526371
