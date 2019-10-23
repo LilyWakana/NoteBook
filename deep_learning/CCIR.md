@@ -29,19 +29,29 @@
 #### 卷积的功能及结构
 &#8195;&#8195;所谓的卷积在数学意义上，是对数据的一种运算，如增加、合成、旋转等，而卷积神经网络的功能就是对输入的数据运算，进行的特征的抽取。卷积神经网络中具体的卷积操作是由卷积核（filter，也称过滤器，一个小型的矩阵）进行的[1]。
 我们通过不断移动该卷积核（移动速度称为步长stride），使其和输入的不同区域进行卷积操作，就可得到整个输入的某种特征。卷积操作的数学描述如下式所示：
-```
-
-```
+<p align="center">
+<img src="./img/fomula_1.png" alt="fomula_1.png" width="400"/>
+</p>
 &#8195;&#8195;其中ci为第i个卷积操作的结果，f为卷积核，m为卷积核的大小。实际应用中，我们一般会为卷积操作增加一个偏置向量b。
 
 #### 膨胀卷积
 &#8195;&#8195;原始的卷积操作中，一次卷积操作的作用范围（也称卷积核的视野）和卷积核的大小相同，如3*3的卷积核只能看到大小为3*3的区域。为了增大卷积核的视野范围，膨胀卷积[2]放大了操作范围，如图1-4，一个3*3的膨胀卷积操作的对象之间相隔了一个参数（即膨胀率或空洞率），其视野放大为原来的4倍。为了不对输入进行重复卷积，膨胀卷积的膨胀率一般为2的幂级数，即以“1、2、4、8、...”的形式递增。本文中，输入数据是问句和文档的embedding 矩阵，而对于自然语言来说，相关的词汇在句子中可能相隔距离较远，因此，为更好地提取特征，我们采用了不同膨胀率的卷积操作。
+<p align="center">
+<img src="./img/ccir_img_1.png" alt="ccir_img_1.png" width="200"/>
+</p>
+
+<p align="center">
+<img src="./img/fomula_2.png" alt="fomula_2.png" width="400"/>
+</p>
+
 
 ### Attention神经网络的网络结构
 &#8195;&#8195;Attention机制是对seq2seq模型的重要优化。传统的seq2seq解编码模型（一般基于RNN及其变形LSTM等）将输入序列使用Encoder模型编码成一个固定长度的向量，然后将得到的向量结合输入xi，在Decoder模型进行解码得到输出yi。seg2seq模型在机器翻译、语音识别等领域较其他模型取得了更好的结果。然而seq2seq模型只能将输入编码为定长的向量，因此其信息存储能力受到限制，并且并没有对过去不同时刻的信息根据重要性区别对待，因此当输入序列过长时，对于距离较远的信息丢失严重，但这些信息可能有一部分与当前时刻具有密切关联。
 
 &#8195;&#8195;传统的seq2seq编码器当前时刻的输出只与当前时刻的输入和上一时刻的输出相关，而Attention模型[18]通过保留编码器的中间输出结果，联合当前时刻的输入再进行当前时刻的输出计算，因此可以更好的保留了过去时刻的信息。Attention的结构如图2-7所示：
-
+<p align="center">
+<img src="./img/ccir_img_2.png" alt="ccir_img_2.png" width="200"/>
+</p>
 
 &#8195;&#8195;从上式可见Attention对于编码器的中间输出hi乘以一个权重αi，用于提取中间输出序列中中更为重要的部分。虽然Attention的加入使得了模型的复杂度增加，但是能在解码之前更好地捕捉到编码器中间输出中的重要部分，有效地提升了模型的准确度。
 
@@ -50,11 +60,19 @@
 ### 答案定位模型的设计
 &#8195;&#8195;答案定位模型的输入为问句和文档的某句子的embedding矩阵，用于估计答案在该句子中的概率。答案定位模型的架构如图3所示：
 
+<p align="center">
+<img src="./img/ccir_img_3.png" alt="ccir_img_3.png" width="400"/>
+</p>
 
 &#8195;&#8195;本模型中，我们先对输入的问句和文档句子进行分词，然后使用word2vec分别对词语进行word embedding，得到每个词语的特征向量Wi，从而得到两个特征矩阵Q和S。为了对Q和S的长度进行限制，我们对Q和S 分别使用Attention分别进行编码，得到大小相同的两个特征向量，接着将特征向量进行拼接（也可以再拼接上其他的已知数据），作为后面三个卷积层的输入（池化操作使用最大池化）。
+<p align="center">
+<img src="./img/fomula_3.png" alt="fomula_3.png" width="400"/>
+</p>
 
 &#8195;&#8195;此处的Attention是参考seq2seq模型中的Attention机制，代替常用的pooling操作，用于对原始输入卷积得到的信息进行整合，其数学形式为：
-
+<p align="center">
+<img src="./img/fomula_4.png" alt="fomula_4.png" width="400"/>
+</p>
 
 &#8195;&#8195;其中W和β是需要训练的参数；Act为激活函数。
 考虑到关联性较强的词语之间距离不一，我们采用不同的膨胀率和不同大小的卷积核来做卷积操作。
@@ -65,6 +83,9 @@
 
 
 &#8195;&#8195;参考[16]，DGCNN模型给卷积操作加上了一个门用于控制输入流量：
+<p align="center">
+<img src="./img/fomula_6.png" alt="fomula_6.png" width="400"/>
+</p>
 
 
 &#8195;&#8195;其中第一个卷积操作是普通的膨胀卷积；第二个卷积用来生成控流门；两个卷积核的形式是相同的，但是权值并不共享。激活函数sigmoid的值域为(0,1)，因此可以视为是对第一个卷积的结果的流量控制，即原信息以1-σ的概率进行更新，卷积后的信息以σ的概率再流动到下一层。同时，DGCNN在卷积中使用残差网络以减少梯度消失的问题，并使得信息在多通道得到传输。
@@ -73,9 +94,22 @@
 &#8195;&#8195;DGCNN模型中的Attention与答案定位模型基本相同。
 
 &#8195;&#8195;DGCNN模型为了过滤掉答案不在句子中的情况，对S的卷积结果进行另一个以sigmoid为激活函数的全连接作为打分器，得到打分矩阵P。最后将P分别与R1和R2进行点积，得到模型的两个输入。即，当答案不存在于句子中时，将P设为0，与两个输入R1和R2点积后的结果就会变为0，以表示答案不在文档句子当中。
+<p align="center">
+<img src="./img/fomula_7.png" alt="fomula_7.png" width="400"/>
+</p>
+
 
 
 &#8195;&#8195;模型的第一个输出是答案的开始位置向量VS，第二个是答案的结束位置向量VE。假设句子经过分词后得到句子单词列表[w1,w2,...,wn]，VS的最大值的下标为i，VE最大值的下标为j，则预测答案为[wi,wi+1,...,wj]（wi表示文档句子的第i个词语）连接而成的句子。
+<p align="center">
+<img src="./img/ccir_img_4.png" alt="ccir_img_4.png" width="400"/>
+</p>
+
+
+
+<p align="center">
+<img src="./img/ccir_img_5.png" alt="ccir_img_5.png" width="400"/>
+</p>
 
 
 &#8195;&#8195;原始的DGCNN只是简单地判断答案在文档句子中的开始结束位置，因此容易受到噪声的影响。如图3-3所示，假设标准答案的开始位置为1，结束位置为3，即答案为[w1,w2,w3]；但当预测结果中具有一个噪声点，其概率值只是比正确结束位置稍大一点（0.75>0.7），预估出来的答案就变为了[w1,w2,w3,w4,w5,w6]。因此，在DGCNN中，哪怕预估得到的最高概率值只是比正确位置的的概率稍高，但是当其索引和正确点索引距离相差较大时，就会造成预测出来的结束位置就和实际结束位置相距甚远。可见，当噪声点的预估值稍大于正确点，预测出来的答案可能就完全不一样，而且原始模型对开始位置和结束位置分开进行预测，没有考虑到二者的先后关系，因此，有时候预估出来的开始位置甚至比结束靠后。
@@ -83,6 +117,9 @@
 
 &#8195;&#8195;为了提高模型的抗噪声能力，我们将原始的DGCNN模型改造如图2-3。相较于原始的DGCNN模型，我们去除了评分器P，还将输出从多输出R1和R2更改为单输出R，模型的基础架构并未改变。输出R中的每个位置的值代表该位置的词位于答案的概率。当我们进行答案抽取时，不仅是考虑该位置的值，还考虑该位置附近概率值的平均值，当该位置附近概率值的平均值大于某个阈值我们才认为这个位置的词是答案的一部分。
 
+<p align="center">
+<img src="./img/ccir_img_6.png" alt="ccir_img_6.png" width="400"/>
+</p>
 
 &#8195;&#8195;我们使用以下不等式进行答案抽取，将满足不等式的第一个位置和最后一个位置作为答案的开始和结束位置。
 
@@ -102,22 +139,33 @@
 
 ### 答案定位模型实验及结果分析
 &#8195;&#8195;由于答案定位模型的输出结果代表答案位于该文档句子的概率，因此我们通过设定概率阈值的方式来判定该句子是否蕴含答案。图4-1显示了答案定位模型测试在不同阈值下的准确率：
+<p align="center">
+<img src="./img/ccir_img_7.png" alt="ccir_img_7.png" width="400"/>
+</p>
 
 &#8195;&#8195;可见答案定位模型地准确率能达到为88.8%。对于蕴含答案的句子，我们的模型能够得到较高的预估值；反之得到的值则较小；由于文档中不含有答案的句子比含有答案的句子的数量更大，因此即使是对于不同的阈值(大于0.85)，模型的准确度也十分接近。然而在实际应用中，将事实上不蕴含答案的句子判错的概率比将事实上蕴含答案的句子判错的可能性更大（因为不想关的文档更多）。考虑到用户的体验性（返回错误答案比返回整个文档的体验更差），应将阈值设为较大值以提高用户体验。
 
 
 &#8195;&#8195;我们实现一个简单的SVM和答案定位模型进行对比，该SVM模型使用的特征有：出现在问句中的文档句子的词语数量占问句词语数量的比例；文档句子中的词和问句句子的词语义相似度大于某个阈值的数量占问句词语数量的比例；文档各词性（名词、动词等）和问句各词性的词语数量比例。两个模型的查准率和查全率结果如表4-1所示。可见，我们的答案定位模型相较于SVM模型具备更好的表现。
-
+<p align="center">
+<img src="./img/ccir_table_1.png" alt="ccir_table_1.png" width="400"/>
+</p>
 
 ### 答案抽取模型实验及结果分析
 &#8195;&#8195;答案抽取模型的输出是文档句子词语位于标准答案的概率。结合概率向量和范围抽取方法，我们从文档中抽取得到预测答案。由于文本具有多样性，因此无法简单地通过预测结果和实际结果是否相同来判断预测结果是否正确，如“移动互联网关键技术、多媒体网络传输技术”和“互联网关键技术、多媒体网络传输”是基本相同的（都可以作为正确的答案）。因此，为了对我们的模型正确性进行判断，我们使用预测答案和标准答案的字符相同个数（“多媒体网络传输技术”和“多媒体网络传输”的相同个数为7）及二者的语义相似度作为相似性评价方法。当预测答案和标准答案的相似度大于一定阈值，则将预测结果视为正确。基于此判定规则，我们使用Levenshtein以及gensim工具来判断。经过测试，我们的答案抽取模型的准确率为68%（准确度随阈值降低而提高）。
 
 &#8195;&#8195;为了比较我们的答案抽取模型的性能，我们实现了一个原始DGCNN模型以及一个普通的CNN模型（模型结果如图3-1所示）。
+<p align="center">
+<img src="./img/ccir_img_8.png" alt="ccir_img_8.png" width="300"/>
+</p>
 
 &#8195;&#8195;该模型的卷积方式以及答案判定方式与原始的DGCNN相同，是在DGCNN的基础上削减了的问句编码以及打分器得到的。
 
 
 &#8195;&#8195;我们将三个模型基于同一数据集和上述正确性判断标准进行对比，结果如表3-1所示。可见，原始的DGCNN架构中的编码以及打分方式，的确能够有效地提升模型的准确率。而相较于一般的CNN架构和原始的DGCNN架构，我们模型具备更高的准确率。
+<p align="center">
+<img src="./img/ccir_table_2.png" alt="ccir_table_2.png" width="400"/>
+</p>
 
 ### 本章小结
 &#8195;&#8195;本章简述了我们的模型的训练数据以及测评结果。我们的模型在实际测评中取得了较为良好的表现，但我们也发现了模型存在的一些缺陷，如答案定位模型的查准率较低；答案抽取模型的准确率不足、训练数据较少等。模型结构和训练数据尚存在可优化的地方。
@@ -132,12 +180,13 @@
 
 
 ## 参考文献
-[1] Alex Krizhevsky , Ilya Sutskever , Geoffrey E. Hinton . ImageNet Classification with Deep Convolutional Neural Networks. nips cc 2012. 
-[2] Fisher Yu, Vladlen Koltun. Multi-scale context aggregation by dilated convolutions. arXiv:1511.07122 [cs.CV]  
-[3] Sepp Hochreiter，Jurgen Schmidhuber.  LONG SHORT-TERM MEMORY.  Neural Computation 9(8):1735{1780, 1997
-[4] Dzmitry Bahdanau, Kyunghyun Cho, Yoshua Bengio. Neural Machine Translation by Jointly Learning to Align and Translate. ICLR 2015
-[5] Volodymyr Mnih, Nicolas Heess, Alex Graves, Koray Kavukcuoglu. Recurrent Models of Visual Attention. arXiv:1406.6247 [cs.LG]2014                                                                                                                [6] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin. Attention Is All You Need. 2017
-[7] Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, Yann N. Dauphin. Convolutional Sequence to Sequence Learning. arXiv:1705.03122 [cs.CL] 2017 
-[8] 基于CNN的阅读理解式问答模型：DGCNN  https://zhuanlan.zhihu.com/p/35755367
-[9] Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun. Deep Residual Learning for Image Recognition. arXiv:1512.03385 [cs.CV]
-[10] Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg Corrado, Jeffrey Dean. Distributed Representations of Words and Phrases and their Compositionality. arXiv:1310.4546 [cs.CL]
+- [1] Alex Krizhevsky , Ilya Sutskever , Geoffrey E. Hinton . ImageNet Classification with Deep Convolutional Neural Networks. nips cc 2012. 
+- [2] Fisher Yu, Vladlen Koltun. Multi-scale context aggregation by dilated convolutions. arXiv:1511.07122 [cs.CV]  
+- [3] Sepp Hochreiter，Jurgen Schmidhuber.  LONG SHORT-TERM MEMORY.  Neural Computation 9(8):1735{1780, 1997
+- [4] Dzmitry Bahdanau, Kyunghyun Cho, Yoshua Bengio. Neural Machine Translation by Jointly Learning to Align and Translate. ICLR 2015
+- [5] Volodymyr Mnih, Nicolas Heess, Alex Graves, Koray Kavukcuoglu. Recurrent Models of Visual Attention. arXiv:1406.6247 [cs.LG]2014
+- [6] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin. Attention Is All You Need. 2017
+- [7] Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, Yann N. Dauphin. Convolutional Sequence to Sequence Learning. arXiv:1705.03122 [cs.CL] 2017 
+- [8] 基于CNN的阅读理解式问答模型：DGCNN  https://zhuanlan.zhihu.com/p/35755367
+- [9] Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun. Deep Residual Learning for Image Recognition. arXiv:1512.03385 [cs.CV]
+- [10] Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg Corrado, Jeffrey Dean. Distributed Representations of Words and Phrases and their Compositionality. arXiv:1310.4546 [cs.CL]
