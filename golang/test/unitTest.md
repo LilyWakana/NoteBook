@@ -1,3 +1,9 @@
+```
+// 测试zjw_test，zjw_test依赖init.go中的函数
+go test  -v db/zjw_test.go db/init.go
+go test  -run Zjw -v db/zjw_test.go db/init.go // 只运行TestZjw
+```
+
 - https://github.com/astaxie/build-web-application-with-golang/edit/master/zh/11.3.md
 - https://golang.org/pkg/testing/
 # 11.3 Go怎么写测试用例
@@ -37,8 +43,7 @@ go get -u -v github.com/cweill/gotests/...
 
 ```
 
-2. gotest_test.go:这是我们的单元测试文件，但是记住下面的这些原则：
-
+- gotest_test.go:这是我们的单元测试文件，但是记住下面的这些原则：
 	- 文件名必须是`_test.go`结尾的，这样在执行`go test`的时候才会执行到相应的代码
 	- 你必须import `testing`这个包
 	- 所有的测试用例函数必须是`Test`开头
